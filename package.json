@@ -1,0 +1,24 @@
+{
+  "name": "nodejs-wa-chatbot",
+  "version": "1.0.0",
+  "description": "NodeJS Webhook for a WhatsApp Chatbot",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/brian02oriel/nodejs-wa-chatbot.git"
+  },
+  "keywords": [
+    "WhatsApp",
+    "Webhook",
+    "NodeJS"
+  ],
+  "author": "Brian Nieto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brian02oriel/nodejs-wa-chatbot/issues"
+  },
+  "homepage": "https://github.com/brian02oriel/nodejs-wa-chatbot#readme"
+}
