@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "NodeJS Webhook for a WhatsApp Chatbot",
   "main": "server.js",
+  "type": "module",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/brian02oriel/nodejs-wa-chatbot.git"
+    "url": "https://github.com/brian02oriel/nodejs-wa-chatbot"
   },
   "keywords": [
     "WhatsApp",
@@ -20,5 +22,14 @@
   "bugs": {
     "url": "https://github.com/brian02oriel/nodejs-wa-chatbot/issues"
   },
-  "homepage": "https://github.com/brian02oriel/nodejs-wa-chatbot#readme"
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "homepage": "https://github.com/brian02oriel/nodejs-wa-chatbot#readme",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
+  }
 }
