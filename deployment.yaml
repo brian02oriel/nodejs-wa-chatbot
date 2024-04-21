@@ -30,6 +30,6 @@ spec:
     app: nodejs-wa-chatbot
   ports:
   - protocol: TCP
-    targetPort: 8080
-    port: 8080
+    targetPort: 80
+    port: 80
   type: LoadBalancer
