@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nodejs-wa-chatbot
+  labels:
+    app: nodejs-wa-chatbot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodejs-wa-chatbot
+  template:
+    metadata:
+      labels:
+        app: nodejs-wa-chatbot
+    spec:
+      containers:
+      - name: nodejs-wa-chatbot
+        image: "us-central1-docker.pkg.dev/nodejs-wa-chatbot/nodejs-wa-chatbot/nodejs-wa-chatbot:v1"
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-wa-chatbot
+spec:
+  selector:
+    app: nodejs-wa-chatbot
+  ports:
+  - protocol: TCP
+    targetPort: 8080
+    port: 8080
+  type: LoadBalancer
