@@ -4,7 +4,7 @@ steps:
   args: ["build", "-t", "us-central1-docker.pkg.dev/$PROJECT_ID/nodejs-wa-chatbot/nodejs-wa-chatbot:v1", "."]
   # push container image
 - name: "gcr.io/cloud-builders/docker"
-  args: ["push", "us-central1-docker.pkg.dev/$PROJECT_ID/github_brian02oriel_nodejs-wa-chatbot/nodejs-wa-chatbot:v1"]
+  args: ["push", "us-central1-docker.pkg.dev/$PROJECT_ID/a/b:v1"]
   # deploy container image to GKE
 - name: "gcr.io/cloud-builders/gke-deploy"
   args:
