@@ -17,6 +17,17 @@ spec:
       containers:
       - name: nodejs-wa-chatbot
         image: "us-central1-docker.pkg.dev/nodejs-wa-chatbot/nodejs-wa-chatbot/nodejs-wa-chatbot:v1"
+        env: 
+        - name: GRAPH_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nodejs-wa-chatbot-envs
+              key: GRAPH_API_TOKEN
+        - name: WEBHOOK_VERIFY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nodejs-wa-chatbot-envs
+              key: WEBHOOK_VERIFY_TOKEN
 
 
 ---
