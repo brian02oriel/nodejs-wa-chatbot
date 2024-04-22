@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 
 const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN } = process.env;
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 80;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
