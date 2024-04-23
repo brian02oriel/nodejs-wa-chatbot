@@ -29,13 +29,11 @@ spec:
               name: nodejs-wa-chatbot-envs
               key: WEBHOOK_VERIFY_TOKEN
 
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: nodejs-wa-chatbot
+  name: service-nodejs-wa-chatbot
 spec:
   selector:
     app: nodejs-wa-chatbot
@@ -46,38 +44,23 @@ spec:
   type: LoadBalancer
 
 ---
-
-  apiVersion: networking.k8s.io/v1
-  kind: Ingress
-  metadata:
-    name: nodejs-wa-chatbot-ingress
-  spec:
-    tls:
-    - hosts:
-      - wa-chatbot-endpoint.xyz
-      secretName: ssl-certificate
-    rules:
-    - host: wa-chatbot-endpoint.xyz
-      http:
-        paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: nodejs-wa-chatbot
-              port:
-                number: 80
----
-
-apiVersion: v1
-kind: Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: nodejs-wa-chatbot-ingress-service
+  name: ingress-nodejs-wa-chatbot
 spec:
-  selector:
-    app: nodejs-wa-chatbot-ingress
-  ports:
-  - protocol: TCP
-    targetPort: 443
-    port: 443
-  type: LoadBalancer
+  tls:
+  - hosts:
+    - wa-chatbot-endpoint.xyz
+    secretName: ssl-certificate
+  rules:
+  - host: wa-chatbot-endpoint.xyz
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-nodejs-wa-chatbot
+            port:
+              number: 80
