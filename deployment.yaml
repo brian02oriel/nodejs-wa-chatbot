@@ -44,15 +44,23 @@ spec:
   type: LoadBalancer
 
 ---
+
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert
+spec:
+  domains:
+    - www.wa-chatbot-endpoint.xyz
+
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-nodejs-wa-chatbot
+  networking.gke.io/managed-certificates: managed-cert
+  ingressClassName: "gce"
 spec:
-  tls:
-  - hosts:
-    - wa-chatbot-endpoint.xyz
-    secretName: ssl-certificate
   rules:
   - host: wa-chatbot-endpoint.xyz
     http:
