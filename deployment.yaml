@@ -64,8 +64,14 @@ metadata:
     networking.gke.io/managed-certificates: managed-cert
     ingressClassName: "gce"
 spec:
-defaultBackend:
-    service:
-      name: service-nodejs-wa-chatbot
-      port:
-        number: 80
+  rules:
+  - host: wa-chatbot-endpoint.xyz
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-nodejs-wa-chatbot
+            port:
+              number: 80
