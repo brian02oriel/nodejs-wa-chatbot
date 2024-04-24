@@ -61,7 +61,7 @@ app.post("/webhook", async (req, res) => {
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 app.get("/webhook", (req, res) => {
-  console.log("Testing webhook", req.query)
+  console.log("Testing webhook----------->", req.query)
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
