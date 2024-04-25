@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from "express";
 import axios from "axios";
+import { Responses } from './classes/Responses/Responses';
 
 const app = express();
 app.use(express.json());
@@ -11,34 +12,27 @@ const PORT = process.env.PORT || 80;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
-  console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
+  //console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
 
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
+      // extract the business number to send the reply from it
+  const businessPhoneNumberId = req.body.entry?.[0].changes?.[0].value?.metadata?.phone_number_id;
+  console.log("Mensaje: ", message)
 
+  const responses = new Responses(businessPhoneNumberId, GRAPH_API_TOKEN)
   // check if the incoming message contains text
-  if (message?.type === "text") {
-    // extract the business number to send the reply from it
-    const business_phone_number_id =
-      req.body.entry?.[0].changes?.[0].value?.metadata?.phone_number_id;
-
-    // send a reply message as per the docs here https://developers.facebook.com/docs/whatsapp/cloud-api/reference/messages
-    await axios({
-      method: "POST",
-      url: `https://graph.facebook.com/v18.0/${business_phone_number_id}/messages`,
-      headers: {
-        Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-      },
-      data: {
-        messaging_product: "whatsapp",
-        to: message.from,
-        text: { body: "Echo: " + message.text.body },
-        context: {
-          message_id: message.id, // shows the message as a reply to the original user message
-        },
-      },
-    });
+  switch(message?.type){
+    case "text":
+      await responses.texts(message)
+    break
+    case "button":
+      await responses.buttons(message)
+    break
+    default:
+      await responses.default(message)
+  }
 
     // mark incoming message as read
     await axios({
@@ -53,7 +47,7 @@ app.post("/webhook", async (req, res) => {
         message_id: message.id,
       },
     });
-  }
+  
 
   res.sendStatus(200);
 });
