@@ -52,7 +52,7 @@ spec:
   - protocol: TCP
     targetPort: 80
     port: 80
-  type: LoadBalancer
+  type: NodePort
 
 ---
 
@@ -65,14 +65,8 @@ metadata:
     networking.gke.io/managed-certificates: managed-cert
     ingressClassName: "gce"
 spec:
-  rules:
-  - host: wa-chatbot-endpoint.xyz
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: service-nodejs-wa-chatbot
-            port:
-              number: 80
+  defaultBackend:
+    service:
+      name: service-nodejs-wa-chatbot
+      port:
+        number: 80
