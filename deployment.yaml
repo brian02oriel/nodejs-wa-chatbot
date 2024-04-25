@@ -17,6 +17,8 @@ spec:
       containers:
       - name: nodejs-wa-chatbot
         image: "us-central1-docker.pkg.dev/nodejs-wa-chatbot/nodejs-wa-chatbot/nodejs-wa-chatbot:v1"
+        ports: 
+          - containerPort: 80
         env: 
         - name: GRAPH_API_TOKEN
           valueFrom:
@@ -28,16 +30,6 @@ spec:
             secretKeyRef:
               name: nodejs-wa-chatbot-envs
               key: WEBHOOK_VERIFY_TOKEN
----
-
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: managed-cert
-spec:
-  domains:
-    - wa-chatbot-endpoint.xyz
-    - www.wa-chatbot-endpoint.xyz
 
 ---
 
@@ -52,6 +44,7 @@ spec:
   - protocol: TCP
     targetPort: 80
     port: 80
+    name: http
   type: NodePort
 
 ---
@@ -65,8 +58,25 @@ metadata:
     networking.gke.io/managed-certificates: managed-cert
     ingressClassName: "gce"
 spec:
-  defaultBackend:
-    service:
-      name: service-nodejs-wa-chatbot
-      port:
-        number: 80
+  rules:
+  - host: wa-chatbot-endpoint.xyz
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-nodejs-wa-chatbot
+            port:
+              number: 80
+
+---
+
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert
+spec:
+  domains:
+    - wa-chatbot-endpoint.xyz
+    - www.wa-chatbot-endpoint.xyz
