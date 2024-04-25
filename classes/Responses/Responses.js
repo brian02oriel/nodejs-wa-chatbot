@@ -86,7 +86,7 @@ export class Responses {
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
             headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
             },
             data: {
               messaging_product: "whatsapp",
