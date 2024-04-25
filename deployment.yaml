@@ -36,6 +36,7 @@ metadata:
   name: managed-cert
 spec:
   domains:
+    - wa-chatbot-endpoint.xyz
     - www.wa-chatbot-endpoint.xyz
 
 ---
