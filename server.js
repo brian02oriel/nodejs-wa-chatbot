@@ -2,13 +2,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from "express";
 import axios from "axios";
-import { Responses } from './classes/Responses/Responses';
+import { Responses } from './classes/Responses/Responses.js';
 
 const app = express();
 app.use(express.json());
 
 const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN } = process.env;
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 8080;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
@@ -37,7 +37,7 @@ app.post("/webhook", async (req, res) => {
     // mark incoming message as read
     await axios({
       method: "POST",
-      url: `https://graph.facebook.com/v18.0/${business_phone_number_id}/messages`,
+      url: `https://graph.facebook.com/v18.0/${businessPhoneNumberId}/messages`,
       headers: {
         Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },

@@ -18,7 +18,7 @@ export class Responses {
                 method: "POST",
                 url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
                 headers: {
-                  Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
                 },
                 data: {
                   messaging_product: "whatsapp",
@@ -41,9 +41,9 @@ export class Responses {
         if(!isNaN(Number(body))){
             await axios({
                 method: "POST",
-                url: `https://graph.facebook.com/v18.0/${business_phone_number_id}/messages`,
+                url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
                 headers: {
-                  Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
                 },
                 data: {
                   messaging_product: "whatsapp",
@@ -64,9 +64,9 @@ export class Responses {
         if(verifyTableRegex.test(body)) {
             await axios({
                 method: "POST",
-                url: `https://graph.facebook.com/v18.0/${business_phone_number_id}/messages`,
+                url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
                 headers: {
-                  Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
                 },
                 data: {
                   messaging_product: "whatsapp",
