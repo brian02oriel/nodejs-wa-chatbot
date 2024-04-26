@@ -60,7 +60,7 @@ export class Responses {
     async buttons(message){
         const body = message?.text?.body
         const verifyTableRegex = /^verificar mesa$/i
-
+        console.log("Cuerpo del mensaje", body)
         if(verifyTableRegex.test(body)) {
             await axios({
                 method: "POST",
