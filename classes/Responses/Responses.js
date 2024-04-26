@@ -58,7 +58,7 @@ export class Responses {
     }
 
     async buttons(message){
-        const body = message?.text?.body
+        const body = message?.button?.payload
         const verifyTableRegex = /^verificar mesa$/i
         console.log("Cuerpo del mensaje", body)
         if(verifyTableRegex.test(body)) {
@@ -82,7 +82,7 @@ export class Responses {
     }
 
     async default(message){
-        console.log("Defaul message")
+        console.log("Default message")
         /* await axios({
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
@@ -98,5 +98,6 @@ export class Responses {
               },
             },
           }); */
+          return
     }
 }
