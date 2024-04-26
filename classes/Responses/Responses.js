@@ -12,7 +12,7 @@ export class Responses {
     async texts(message){
         const body = message?.text?.body
         const welcomeRegex = /^buenas$/i
-
+        console.log("Cuerpo del mensaje", body)
         if(welcomeRegex.test(body)){
             await axios({
                 method: "POST",
@@ -82,7 +82,8 @@ export class Responses {
     }
 
     async default(message){
-        await axios({
+        console.log("Defaul message")
+        /* await axios({
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
             headers: {
@@ -96,6 +97,6 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          }); */
     }
 }

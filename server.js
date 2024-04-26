@@ -28,6 +28,7 @@ app.post("/webhook", async (req, res) => {
       await responses.texts(message)
     break
     case "button":
+      console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
       await responses.buttons(message)
     break
     default:
