@@ -48,7 +48,9 @@ export class Responses {
                 data: {
                   messaging_product: "whatsapp",
                   to: message.from,
-                  text: "Su mesa de votación es: ",
+                  text: {
+                    body: "Su mesa de votación es: "
+                  },
                   context: {
                     message_id: message.id,
                   },
@@ -72,7 +74,9 @@ export class Responses {
                 data: {
                   messaging_product: "whatsapp",
                   to: message.from,
-                  text: "Envíenos su cédula sin guiones",
+                  text: {
+                    body: "Envíenos su cédula sin guiones"
+                  },
                   context: {
                     message_id: message.id,
                   },

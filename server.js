@@ -32,6 +32,10 @@ app.post("/webhook", async (req, res) => {
       await responses.buttons(message)
     break
   }
+  console.log("----------------------- Object -------------------", JSON.stringify({
+    from: message?.from,
+    id: message?.id
+  }))
   // mark incoming message as read
   await axios({
     method: "POST",
@@ -42,7 +46,7 @@ app.post("/webhook", async (req, res) => {
     data: {
       messaging_product: "whatsapp",
       status: "read",
-      message_id: message.id,
+      message_id: message?.id,
     },
   });
 
