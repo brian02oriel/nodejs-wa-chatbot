@@ -23,16 +23,20 @@ app.post("/webhook", async (req, res) => {
 
   const responses = new Responses(businessPhoneNumberId, GRAPH_API_TOKEN)
   // check if the incoming message contains text
-  switch(message?.type){
-    case "text":
-      await responses.texts(message)
-    break
-    case "button":
-      console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
-      await responses.buttons(message)
-    break
-    default:
-      await responses.default(message)
+  try {
+    switch(message?.type){
+      case "text":
+        await responses.texts(message)
+      break
+      case "button":
+        console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
+        await responses.buttons(message)
+      break
+      default:
+        await responses.default(message)
+    }
+  } catch (error) {
+    console.error(error)
   }
 
     // mark incoming message as read
