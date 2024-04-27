@@ -23,36 +23,28 @@ app.post("/webhook", async (req, res) => {
 
   const responses = new Responses(businessPhoneNumberId, GRAPH_API_TOKEN)
   // check if the incoming message contains text
-  try {
-    switch(message?.type){
-      case "text":
-        await responses.texts(message)
-      break
-      case "button":
-        //console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
-        await responses.buttons(message)
-      break
-      default:
-        await responses.default(message)
-    }
-  } catch (error) {
-    //console.error(error)
+  switch(message?.type){
+    case "text":
+      await responses.texts(message)
+    break
+    case "button":
+      //console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
+      await responses.buttons(message)
+    break
   }
-
-    // mark incoming message as read
-    await axios({
-      method: "POST",
-      url: `https://graph.facebook.com/v18.0/${businessPhoneNumberId}/messages`,
-      headers: {
-        Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-      },
-      data: {
-        messaging_product: "whatsapp",
-        status: "read",
-        message_id: message.id,
-      },
-    });
-  
+  // mark incoming message as read
+  await axios({
+    method: "POST",
+    url: `https://graph.facebook.com/v18.0/${businessPhoneNumberId}/messages`,
+    headers: {
+      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+    },
+    data: {
+      messaging_product: "whatsapp",
+      status: "read",
+      message_id: message.id,
+    },
+  });
 
   res.sendStatus(200);
 });
