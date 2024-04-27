@@ -19,7 +19,7 @@ app.post("/webhook", async (req, res) => {
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
       // extract the business number to send the reply from it
   const businessPhoneNumberId = req.body.entry?.[0].changes?.[0].value?.metadata?.phone_number_id;
-  console.log("Mensaje: ", message)
+  //console.log("Mensaje: ", message)
 
   const responses = new Responses(businessPhoneNumberId, GRAPH_API_TOKEN)
   // check if the incoming message contains text
@@ -29,7 +29,7 @@ app.post("/webhook", async (req, res) => {
         await responses.texts(message)
       break
       case "button":
-        console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
+        //console.log("Incoming webhook message:", JSON.stringify(req.body, null, 2));
         await responses.buttons(message)
       break
       default:
