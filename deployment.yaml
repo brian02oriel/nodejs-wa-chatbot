@@ -55,11 +55,11 @@ metadata:
   name: ingress-nodejs-wa-chatbot
   annotations:
     kubernetes.io/ingress.global-static-ip-name: wachatbotip
-    networking.gke.io/managed-certificates: managed-cert
+    networking.gke.io/managed-certificates: managed-cert-1
     ingressClassName: "gce"
 spec:
   rules:
-  - host: wa-chatbot-endpoint.xyz
+  - host: wa-chatbot-app.xyz
     http:
       paths:
       - path: /
@@ -69,14 +69,3 @@ spec:
             name: service-nodejs-wa-chatbot
             port:
               number: 80
-
----
-
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: managed-cert
-spec:
-  domains:
-    - wa-chatbot-endpoint.xyz
-    - www.wa-chatbot-endpoint.xyz
