@@ -36,7 +36,7 @@ app.post("/webhook", async (req, res) => {
         await responses.default(message)
     }
   } catch (error) {
-    console.error(error)
+    //console.error(error)
   }
 
     // mark incoming message as read
