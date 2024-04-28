@@ -3,7 +3,7 @@ dotenv.config();
 import express from "express";
 import axios from "axios";
 import moment from 'moment';
-import { Responses } from './classes/Responses/Responses.js';
+import { Responses } from './classes/Responses.js';
 
 const app = express();
 app.use(express.json());
@@ -28,6 +28,9 @@ app.post("/webhook", async (req, res) => {
       break
       case "button":
         await responses.buttons(message)
+      break
+      case "interactive":
+          await responses.replies(message)
       break
     }
   } catch (error) {
@@ -62,7 +65,7 @@ app.post("/recurrent", async (req, res) => {
   // log incoming messages
   console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2));
   const to = req.body.to
-  const daysCount = moment('2024-05-05 00:00Z').diff(moment(), 'days')
+  const daysCount = moment('2024-05-05 00:00Z').diff(moment(), 'days') + 1
   
   await axios({
     method: "POST",

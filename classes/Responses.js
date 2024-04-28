@@ -1,4 +1,5 @@
 import axios from "axios";
+import { CloudStorage } from "./CloudStorage";
 
 export class Responses {
     businessPhoneNumberId
@@ -36,27 +37,6 @@ export class Responses {
                 },
               });
         }
-
-        // TODO: create a regex to support panamanian id (including residents, foreigns)
-        if(!isNaN(Number(body))){
-            await axios({
-                method: "POST",
-                url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
-                headers: {
-                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-                },
-                data: {
-                  messaging_product: "whatsapp",
-                  to: message.from,
-                  text: {
-                    body: "Su mesa de votación es: "
-                  },
-                  context: {
-                    message_id: message.id,
-                  },
-                },
-              });
-        }
     }
 
     async buttons(message){
@@ -65,25 +45,72 @@ export class Responses {
         console.log("Button Message: ", JSON.stringify(message))
         //console.log("Cuerpo del mensaje", body)
         if(verifyTableRegex.test(body)) {
-            await axios({
-                method: "POST",
-                url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
-                headers: {
-                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              type: "template",
+              template: {
+                name: "personal_id",
+                language: {
+                    code: "es"
                 },
-                data: {
-                  messaging_product: "whatsapp",
-                  to: message.from,
-                  text: {
-                    body: "Envíenos su cédula sin guiones"
+                components: [
+                  {
+                      type: "header"
                   },
-                  context: {
-                    message_id: message.id,
+                  {
+                      type: "body"
                   },
-                },
-              });
+                  {
+                      type: "button",
+                      sub_type: "flow",
+                      index: 0,
+                      parameters: [
+                          {
+                              type: "text",
+                              text: "Introduzca su cédula"
+                          }
+                      ]
+                  }
+                ]
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
         }
 
+    }
+
+    async replies(message){
+      console.log("NFM_REPLY Message: ", message.response_json)
+      const storage = new CloudStorage()
+      storage.readFile()
+      
+      await axios({
+        method: "POST",
+        url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+        headers: {
+          Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+        },
+        data: {
+          messaging_product: "whatsapp",
+          to: message.from,
+          text: {
+            body: "Su mesa de votación es: "
+          },
+          context: {
+            message_id: message.id,
+          },
+        },
+      });
     }
 
     async default(message){

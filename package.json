@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/brian02oriel/nodejs-wa-chatbot#readme",
   "dependencies": {
+    "@google-cloud/storage": "^7.10.2",
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
