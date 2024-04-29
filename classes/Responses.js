@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CloudStorage } from "./CloudStorage";
+import { CloudStorage } from "./CloudStorage.js";
 
 export class Responses {
     businessPhoneNumberId
@@ -90,27 +90,48 @@ export class Responses {
     }
 
     async replies(message){
-      console.log("NFM_REPLY Message: ", message.response_json)
+      const body = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_TextInput_0 ?? ''
       const storage = new CloudStorage()
-      storage.readFile()
-      
-      await axios({
-        method: "POST",
-        url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
-        headers: {
-          Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-        },
-        data: {
-          messaging_product: "whatsapp",
-          to: message.from,
-          text: {
-            body: "Su mesa de votación es: "
+      const data = await storage.readFile(body ?? '')
+
+      if(data.status){
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+          headers: {
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
           },
-          context: {
-            message_id: message.id,
+          data: {
+            messaging_product: "whatsapp",
+            to: message.from,
+            text: {
+              body: `*${data.name}*, le corresponde votar en: *${data.voteCenter}*, en la mesa: *${data.voteTable}*.`
+            },
+            context: {
+              message_id: message.id,
+            },
           },
-        },
-      });
+        });
+      } else {
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+          headers: {
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+          },
+          data: {
+            messaging_product: "whatsapp",
+            to: message.from,
+            text: {
+              body: "No hemos podido encontrar su centro de votación."
+            },
+            context: {
+              message_id: message.id,
+            },
+          },
+        });
+      }
+
     }
 
     async default(message){

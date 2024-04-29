@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 8080;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
-  console.log("----------------------Incoming webhook message ---------------", JSON.stringify(req.body, null, 2));
+  console.log("----------------------Incoming webhook message ---------------"/* , JSON.stringify(req.body, null, 2) */);
 
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -67,7 +67,7 @@ app.post("/recurrent", async (req, res) => {
   const to = req.body.to
   const daysCount = moment('2024-05-05 00:00Z').diff(moment(), 'days') + 1
   
-  await axios({
+  /* await axios({
     method: "POST",
     url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
     headers: {
@@ -80,7 +80,7 @@ app.post("/recurrent", async (req, res) => {
         body: `Buenos días, te saluda Irma Hernández. *Faltan ${daysCount} días* para la fiesta de la democracia. Recuerda verificar tu mesa de votación y asegurar el transporte a tu lugar de votación. *¡VAMOS POR UN MEJOR SAN MIGUELITO!*`
       },
     },
-  });
+  }); */
 
   await axios({
     method: "POST",
