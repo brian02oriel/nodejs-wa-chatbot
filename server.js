@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 8080;
 
 app.post("/webhook", async (req, res) => {
   // log incoming messages
-  console.log("----------------------Incoming webhook message ---------------"/* , JSON.stringify(req.body, null, 2) */);
+  console.log("----------------------Incoming webhook message ---------------", JSON.stringify(req.body, null, 2));
 
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -78,7 +78,7 @@ app.post("/recurrent", async (req, res) => {
       to,
       type: "template",
       template: {
-        name: "llamado_a_accion_5_de_mayo",
+        name: "test_llamado",
         language: {
             code: "es"
         },
@@ -103,8 +103,6 @@ app.post("/recurrent", async (req, res) => {
 });
 
 app.post("/difusion", async (req, res) => {
-  // log incoming messages
-  console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2));
   const dto = new DTOs()
   const contacts = await dto.readContacts()
   const responses = new Responses(BUSINESS_PHONE_ID, GRAPH_API_TOKEN)
@@ -112,12 +110,18 @@ app.post("/difusion", async (req, res) => {
     res.sendStatus(200);
   }
 
-  for(const contact of contacts){
+  // Note: For other scope in difusion message just add the SeCabreoDeNosotros variable in this condition
+  const filteredContacts = contacts?.filter((x)=> !x?.ContactadoAutomaticamente && !x?.SeCabreoDeNosotros)
+  for(const contact of filteredContacts){
     let { Celular } = contact
     await responses.difusion(`507${Celular}`, MEDIA_ID)
-    contact.ContactadoAutomaticamente = 1
   }
   
+  
+  for(const contact of contacts){
+    contact.ContactadoAutomaticamente = 1
+  }
+
   const csv = convertToCSV(contacts)
   const storage = new CloudStorage()
   storage.writeFile('contactos_irmaneta_test.csv', csv)

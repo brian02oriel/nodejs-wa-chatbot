@@ -1,53 +1,73 @@
 import axios from "axios";
 import { DTOs } from "./DTOs.js";
+import { CloudStorage } from './CloudStorage.js';
+import { convertToCSV } from '../resources/utils.js';
 
 export class Responses {
-    businessPhoneNumberId
+    BUSINESS_PHONE_ID
     GRAPH_API_TOKEN
-    constructor(businessPhoneNumberId, GRAPH_API_TOKEN){
-        this.businessPhoneNumberId = businessPhoneNumberId
+    constructor(BUSINESS_PHONE_ID, GRAPH_API_TOKEN){
+        this.BUSINESS_PHONE_ID = BUSINESS_PHONE_ID
         this.GRAPH_API_TOKEN = GRAPH_API_TOKEN
     }
     
     // send a reply message as per the docs here https://developers.facebook.com/docs/whatsapp/cloud-api/reference/messages
     async texts(message){
         const body = message?.text?.body
-        const welcomeRegex = /^buenas$/i
-        console.log("Cuerpo del mensaje", body)
-        if(welcomeRegex.test(body)){
-            await axios({
-                method: "POST",
-                url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
-                headers: {
-                  Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-                },
-                data: {
-                  messaging_product: "whatsapp",
-                  to: message.from,
-                  type: "template",
-                  template: {
-                    "name": "llamado_a_accion_5_de_mayo",
-                    "language": {
-                        "code": "es"
-                    }
-                  },
-                  context: {
-                    message_id: message.id,
-                  },
-                },
-              });
+        const noOption = /^no$/i
+        if(noOption.test(body)){
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              text: {
+                body: `Agradecemos su confianza, lo mantendremos al tanto.`
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
+        } else {
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              type: "template",
+              template: {
+                "name": "test_llamado",
+                "language": {
+                    "code": "es"
+                }
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
         }
     }
 
     async buttons(message){
         const body = message?.button?.payload
         const verifyTableRegex = /^verificar mesa$/i
-        console.log("Button Message: ", JSON.stringify(message))
-        //console.log("Cuerpo del mensaje", body)
+        const deleteContact = /^eliminar de contactos$/i
+        const yesOption = /^sí$/i
+        const noOption = /^no$/i
         if(verifyTableRegex.test(body)) {
           await axios({
             method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
             headers: {
               Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
             },
@@ -80,7 +100,80 @@ export class Responses {
             },
           });
         }
+        if(deleteContact.test(body)){
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              type: "template",
+              template: {
+                "name": "delete_contact",
+                "language": {
+                    "code": "es"
+                }
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
+        }
+        if(yesOption.test(body)){
+          const dto = new DTOs()
+          const contacts = await dto.readContacts()
+          if(contacts?.length === 0){
+            res.sendStatus(200);
+          }
+        
+          const contactIndex = contacts?.findIndex((x)=> `507${x?.Celular}` === message?.from)
+          contacts[contactIndex].SeCabreoDeNosotros = 1
 
+          const csv = convertToCSV(contacts)
+          const storage = new CloudStorage()
+          storage.writeFile('contactos_irmaneta_test.csv', csv)
+
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              text: {
+                body: `Ha sido borrado de la lista de difusión, Le agradecemos tu tiempo.`
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
+        }
+        if(noOption.test(body)){
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              text: {
+                body: `Agradecemos su confianza, lo mantendremos al tanto.`
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          });
+        }
     }
 
     async replies(message){
@@ -91,7 +184,7 @@ export class Responses {
       if(data.status){
         await axios({
           method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
           headers: {
             Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
           },
@@ -108,13 +201,13 @@ export class Responses {
         });
         await axios({
           method: "POST",
-          url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
           headers: {
-            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
           },
           data: {
             messaging_product: "whatsapp",
-            to,
+            to: message.from,
             type: "template",
             template: {
               "name": "services",
@@ -127,7 +220,7 @@ export class Responses {
       } else {
         await axios({
           method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
           headers: {
             Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
           },
@@ -149,7 +242,7 @@ export class Responses {
     async difusion(to, MEDIA_ID){
       await axios({
         method: "POST",
-        url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+        url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
         headers: {
           Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
         },
@@ -158,7 +251,7 @@ export class Responses {
           to,
           type: "template",
           template: {
-            name: "llamado_a_accion_5_de_mayo",
+            name: "test_llamado",
             language: {
                 code: "es"
             },

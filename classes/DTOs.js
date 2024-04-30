@@ -50,7 +50,6 @@ export class DTOs {
             await new Promise((resolve, reject) => {
                 stream.on('data', (row) => {
                     const { Activista, Desvinculado, Celular, Correo, Corregimiento, CentroVotacion, ContactadoAutomaticamente, SeCabreoDeNosotros } = row;
-                    if (!ContactadoAutomaticamente && !SeCabreoDeNosotros) {
                         data.push({
                             Activista, 
                             Desvinculado, 
@@ -62,7 +61,6 @@ export class DTOs {
                             SeCabreoDeNosotros
                         });
                         resolve();
-                    }
                 });
     
                 stream.on('end', () => {
