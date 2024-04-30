@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CloudStorage } from "./CloudStorage.js";
+import { DTOs } from "./DTOs.js";
 
 export class Responses {
     businessPhoneNumberId
@@ -62,12 +62,6 @@ export class Responses {
                 },
                 components: [
                   {
-                      type: "header"
-                  },
-                  {
-                      type: "body"
-                  },
-                  {
                       type: "button",
                       sub_type: "flow",
                       index: 0,
@@ -91,8 +85,8 @@ export class Responses {
 
     async replies(message){
       const body = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_TextInput_0 ?? ''
-      const storage = new CloudStorage()
-      const data = await storage.readFile(body ?? '')
+      const dto = new DTOs()
+      const data = await dto.readVoteCenter(body ?? '')
 
       if(data.status){
         await axios({
@@ -109,6 +103,24 @@ export class Responses {
             },
             context: {
               message_id: message.id,
+            },
+          },
+        });
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
+          headers: {
+            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+          },
+          data: {
+            messaging_product: "whatsapp",
+            to,
+            type: "template",
+            template: {
+              "name": "services",
+              "language": {
+                  "code": "es"
+              }
             },
           },
         });
@@ -132,6 +144,40 @@ export class Responses {
         });
       }
 
+    }
+
+    async difusion(to, MEDIA_ID){
+      await axios({
+        method: "POST",
+        url: `https://graph.facebook.com/v18.0/${this.businessPhoneNumberId}/messages`,
+        headers: {
+          Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+        },
+        data: {
+          messaging_product: "whatsapp",
+          to,
+          type: "template",
+          template: {
+            name: "llamado_a_accion_5_de_mayo",
+            language: {
+                code: "es"
+            },
+            components: [
+              {
+                  type: "header",
+                  parameters: [
+                    {
+                        type: "image",
+                        image: {
+                            id: MEDIA_ID
+                        }
+                    }
+                  ]
+              }
+            ]
+          },
+        },
+      });
     }
 
     async default(message){

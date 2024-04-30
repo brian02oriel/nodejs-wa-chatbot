@@ -2,13 +2,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from "express";
 import axios from "axios";
-import moment from 'moment';
 import { Responses } from './classes/Responses.js';
+import { DTOs } from './classes/DTOs.js';
+import { CloudStorage } from './classes/CloudStorage.js';
+import { convertToCSV } from './resources/utils.js';
 
 const app = express();
 app.use(express.json());
 
-const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, BUSINESS_PHONE_ID } = process.env;
+const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, BUSINESS_PHONE_ID, MEDIA_ID } = process.env;
 const PORT = process.env.PORT || 8080;
 
 app.post("/webhook", async (req, res) => {
@@ -65,23 +67,6 @@ app.post("/recurrent", async (req, res) => {
   // log incoming messages
   console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2));
   const to = req.body.to
-  const daysCount = moment('2024-05-05 00:00Z').diff(moment(), 'days') + 1
-  
-  /* await axios({
-    method: "POST",
-    url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
-    headers: {
-      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-    },
-    data: {
-      messaging_product: "whatsapp",
-      to,
-      text: {
-        body: `Buenos días, te saluda Irma Hernández. *Faltan ${daysCount} días* para la fiesta de la democracia. Recuerda verificar tu mesa de votación y asegurar el transporte a tu lugar de votación. *¡VAMOS POR UN MEJOR SAN MIGUELITO!*`
-      },
-    },
-  }); */
-
   await axios({
     method: "POST",
     url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
@@ -93,15 +78,50 @@ app.post("/recurrent", async (req, res) => {
       to,
       type: "template",
       template: {
-        "name": "services",
-        "language": {
-            "code": "es"
-        }
+        name: "llamado_a_accion_5_de_mayo",
+        language: {
+            code: "es"
+        },
+        components: [
+          {
+              type: "header",
+              parameters: [
+                {
+                    type: "image",
+                    image: {
+                        id: MEDIA_ID
+                    }
+                }
+              ]
+          }
+        ]
       },
     },
   });
 
+  res.sendStatus(200);
+});
 
+app.post("/difusion", async (req, res) => {
+  // log incoming messages
+  console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2));
+  const dto = new DTOs()
+  const contacts = await dto.readContacts()
+  const responses = new Responses(BUSINESS_PHONE_ID, GRAPH_API_TOKEN)
+  if(contacts?.length === 0){
+    res.sendStatus(200);
+  }
+
+  for(const contact of contacts){
+    let { Celular } = contact
+    await responses.difusion(`507${Celular}`, MEDIA_ID)
+    contact.ContactadoAutomaticamente = 1
+  }
+  
+  const csv = convertToCSV(contacts)
+  const storage = new CloudStorage()
+  storage.writeFile('contactos_irmaneta_test.csv', csv)
+  
   res.sendStatus(200);
 });
 
