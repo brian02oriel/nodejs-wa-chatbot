@@ -45,7 +45,7 @@ export class Responses {
               to: message.from,
               type: "template",
               template: {
-                "name": "test_llamado",
+                "name": "services",
                 "language": {
                     "code": "es"
                 }
