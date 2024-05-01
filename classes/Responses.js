@@ -147,7 +147,7 @@ export class Responses {
               messaging_product: "whatsapp",
               to: message.from,
               text: {
-                body: `Ha sido borrado de la lista de difusión, Le agradecemos tu tiempo.`
+                body: `Ha sido borrado de la lista de difusión, Le agradecemos su tiempo.`
               },
               context: {
                 message_id: message.id,
@@ -251,7 +251,7 @@ export class Responses {
           to,
           type: "template",
           template: {
-            name: "test_llamado",
+            name: "llamado_a_accion_5_de_mayo",
             language: {
                 code: "es"
             },

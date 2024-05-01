@@ -67,37 +67,41 @@ app.post("/recurrent", async (req, res) => {
   // log incoming messages
   console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2));
   const to = req.body.to
-  await axios({
-    method: "POST",
-    url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
-    headers: {
-      Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-    },
-    data: {
-      messaging_product: "whatsapp",
-      to,
-      type: "template",
-      template: {
-        name: "test_llamado",
-        language: {
-            code: "es"
-        },
-        components: [
-          {
-              type: "header",
-              parameters: [
-                {
-                    type: "image",
-                    image: {
-                        id: MEDIA_ID
-                    }
-                }
-              ]
-          }
-        ]
+  try {
+    await axios({
+      method: "POST",
+      url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
+      headers: {
+        Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },
-    },
-  });
+      data: {
+        messaging_product: "whatsapp",
+        to,
+        type: "template",
+        template: {
+          name: "llamado_a_accion_5_de_mayo",
+          language: {
+              code: "es"
+          },
+          components: [
+            {
+                type: "header",
+                parameters: [
+                  {
+                      type: "image",
+                      image: {
+                          id: MEDIA_ID
+                      }
+                  }
+                ]
+            }
+          ]
+        },
+      },
+    });
+  } catch (error) {
+    console.log(JSON.stringify(error, null, 2))
+  }
 
   res.sendStatus(200);
 });
