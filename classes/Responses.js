@@ -1,7 +1,7 @@
-import axios from "axios";
-import { DTOs } from "./DTOs.js";
-import { CloudStorage } from './CloudStorage.js';
-import { convertToCSV } from '../resources/utils.js';
+import axios from "axios"
+import { DTOs } from "./DTOs.js"
+import { CloudStorage } from './CloudStorage.js'
+import { convertToCSV } from '../resources/utils.js'
 
 export class Responses {
     BUSINESS_PHONE_ID
@@ -32,7 +32,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         } else {
           await axios({
             method: "POST",
@@ -54,7 +54,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         }
     }
 
@@ -98,7 +98,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         }
         if(deleteContact.test(body)){
           await axios({
@@ -121,13 +121,13 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         }
         if(yesOption.test(body)){
           const dto = new DTOs()
           const contacts = await dto.readContacts()
           if(contacts?.length === 0){
-            res.sendStatus(200);
+            res.sendStatus(200)
           }
         
           const contactIndex = contacts?.findIndex((x)=> `507${x?.Celular}` === message?.from)
@@ -135,7 +135,7 @@ export class Responses {
 
           const csv = convertToCSV(contacts)
           const storage = new CloudStorage()
-          storage.writeFile('contactos_irmaneta_test.csv', csv)
+          storage.writeFile('difusion_1.csv', csv)
 
           await axios({
             method: "POST",
@@ -153,7 +153,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         }
         if(noOption.test(body)){
           await axios({
@@ -172,7 +172,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          });
+          })
         }
     }
 
@@ -198,7 +198,7 @@ export class Responses {
               message_id: message.id,
             },
           },
-        });
+        })
         await axios({
           method: "POST",
           url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
@@ -216,7 +216,7 @@ export class Responses {
               }
             },
           },
-        });
+        })
       } else {
         await axios({
           method: "POST",
@@ -234,7 +234,25 @@ export class Responses {
               message_id: message.id,
             },
           },
-        });
+        })
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+          headers: {
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+          },
+          data: {
+            messaging_product: "whatsapp",
+            to: message.from,
+            type: "template",
+            template: {
+              "name": "services",
+              "language": {
+                  "code": "es"
+              }
+            },
+          },
+        })
       }
 
     }
@@ -270,7 +288,7 @@ export class Responses {
             ]
           },
         },
-      });
+      })
     }
 
     async default(message){
@@ -289,7 +307,7 @@ export class Responses {
                 message_id: message.id,
               },
             },
-          }); */
+          }) */
           return
     }
 }
