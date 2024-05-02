@@ -47,6 +47,10 @@ const ButtonSchema = new Schema({
 })
 
 const InteractiveSchema = new Schema({
+    type: String,
+    nfm_reply: {
+        response_json: String
+    },
     list_reply: {
       id: String,
       title: String,

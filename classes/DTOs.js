@@ -61,7 +61,7 @@ export class DTOs {
                             ContactadoAutomaticamente, 
                             SeCabreoDeNosotros
                         })
-                        resolve()
+                        //resolve()
                 })
     
                 stream.on('end', () => {
@@ -166,6 +166,9 @@ export class DTOs {
     }
     formatInteractive(object){
         return {
+            nfm_reply: object?.nfm_reply?.response_json ? {
+                response_json: object?.nfm_reply?.response_json
+            } : undefined,
             list_reply: object?.list_reply?.id ? {
                 id: object?.list_reply?.id,
                 title: object?.list_reply?.title,

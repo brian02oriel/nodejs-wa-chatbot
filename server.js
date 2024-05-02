@@ -55,18 +55,22 @@ app.post("/webhook", async (req, res) => {
   
       if(message?.type){
         // mark incoming message as read
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
-          headers: {
-            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            status: "read",
-            message_id: message?.id,
-          },
-        })
+        try {
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              status: "read",
+              message_id: message?.id,
+            },
+          })
+        } catch (error) {
+          console.error("WEBHOOK ERROR: ", JSON.stringify(error))
+        }
       }
   }
 
@@ -74,9 +78,8 @@ app.post("/webhook", async (req, res) => {
 })
 
 app.post("/recurrent", async (req, res) => {
-  // log incoming messages
-  console.log("---------------------- INCOMING RECURRENT MESSAGE ---------------", JSON.stringify(req.body, null, 2))
   const to = req.body.to
+  console.log(`---------------ENVIANDO RECURRENT A: ${to} ----------------`)
   try {
     await axios({
       method: "POST",
@@ -128,12 +131,20 @@ app.post("/difusion", async (req, res) => {
   const filteredContacts = contacts?.filter((x)=> !x?.ContactadoAutomaticamente && !x?.SeCabreoDeNosotros)
   for(const contact of filteredContacts){
     let { Celular } = contact
-    await responses.difusion(`507${Celular}`, MEDIA_ID)
+    console.log(`USER: ${contact.Activista} - ${contact.Celular}`)
+    const sended = await responses.difusion(`507${Celular}`, MEDIA_ID)
+    if(sended){
+      contact.ContactadoAutomaticamente = 1  
+    }
   }
   
   
-  for(const contact of contacts){
-    contact.ContactadoAutomaticamente = 1
+  for(let contact of contacts){
+    const exists = filteredContacts?.find((x)=> x?.Celular)
+    console.log("---------- UPDATED CONTACT --------------", JSON.stringify(exists))
+    if(exists){
+      contact = {...exists}
+    }
   }
 
   const csv = convertToCSV(contacts)

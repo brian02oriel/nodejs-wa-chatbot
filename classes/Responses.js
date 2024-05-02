@@ -228,7 +228,7 @@ export class Responses {
             messaging_product: "whatsapp",
             to: message.from,
             text: {
-              body: "No hemos podido encontrar su centro de votación."
+              body: "No hemos podido encontrar su centro de votación. Por favor, consulte en la página oficial del Tribunal Electoral: https://verificate.te.gob.pa/"
             },
             context: {
               message_id: message.id,
@@ -258,37 +258,50 @@ export class Responses {
     }
 
     async difusion(to, MEDIA_ID){
-      await axios({
-        method: "POST",
-        url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-        headers: {
-          Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-        },
-        data: {
-          messaging_product: "whatsapp",
-          to,
-          type: "template",
-          template: {
-            name: "llamado_a_accion_5_de_mayo",
-            language: {
-                code: "es"
-            },
-            components: [
-              {
-                  type: "header",
-                  parameters: [
-                    {
-                        type: "image",
-                        image: {
-                            id: MEDIA_ID
-                        }
-                    }
-                  ]
-              }
-            ]
+      console.log(`---------------ENVIANDO MENSAJE A: ${to} ----------------`)
+      console.log('this.BUSINESS_PHONE_ID: ', this.BUSINESS_PHONE_ID !== undefined)
+      console.log('this.GRAPH_API_TOKEN: ', this.GRAPH_API_TOKEN !== undefined)
+      console.log('MEDIA_ID: ', MEDIA_ID !== undefined)
+      try {
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+          headers: {
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
           },
-        },
-      })
+          data: {
+            messaging_product: "whatsapp",
+            to,
+            type: "template",
+            template: {
+              name: "llamado_a_accion_5_de_mayo",
+              language: {
+                  code: "es"
+              },
+              components: [
+                {
+                    type: "header",
+                    parameters: [
+                      {
+                          type: "image",
+                          image: {
+                              id: MEDIA_ID
+                          }
+                      }
+                    ]
+                }
+              ]
+            },
+          },
+        })
+        console.log(`--------------- MENSAJE ENVIADO A: ${to} ----------------`)
+        return true
+      } catch (error) {
+        console.log(`--------------- NO SE HA PODIDO ENVIAR EL MENSAJE A: ${to} ----------------`)
+        console.error("DIFUSION ERROR:", JSON.stringify(error))
+        return false
+      }
+
     }
 
     async default(message){
