@@ -14,14 +14,19 @@ export class DTOs {
             await new Promise((resolve, reject) => {
                 stream.on('data', (row) => {
                     if (row.Cedula.replace(/-/g,'') === userPersonalId) {
-                        const { Cedula, Nombres, Apellidos, CentroVotacion, Mesa } = row
+                        const { Zona, Cedula, Nombres, Apellidos, CentroVotacion, Mesa } = row
+                        console.log("ROW: ", JSON.stringify(row))
+                        console.log("KEYS: ", JSON.stringify(Object.keys(row)))
                         data = {
                             status: 1,
                             id: Cedula,
                             name: `${Nombres} ${Apellidos}`,
+                            zone: Zona,
                             voteCenter: CentroVotacion,
-                            voteTable: Mesa
+                            voteTable: Mesa,
                         }
+                        console.log("ZONE: ", data.zone)
+                        console.log("DATA: ", JSON.stringify(data))
                         resolve()
                     }
                 })
@@ -47,7 +52,7 @@ export class DTOs {
         const storage = new CloudStorage()
         
         try {
-            const stream = storage.readFile("difusion_1.csv")
+            const stream = storage.readFile("difusion.csv")
             await new Promise((resolve, reject) => {
                 stream.on('data', (row) => {
                     const { Activista, Desvinculado, Celular, Correo, Corregimiento, CentroVotacion, ContactadoAutomaticamente, SeCabreoDeNosotros } = row

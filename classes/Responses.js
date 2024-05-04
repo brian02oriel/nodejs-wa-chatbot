@@ -1,7 +1,7 @@
 import axios from "axios"
 import { DTOs } from "./DTOs.js"
 import { CloudStorage } from './CloudStorage.js'
-import { convertToCSV } from '../resources/utils.js'
+import { convertToCSV, zoneToImage } from '../resources/utils.js'
 
 export class Responses {
     BUSINESS_PHONE_ID
@@ -16,6 +16,203 @@ export class Responses {
         const body = message?.text?.body
         const noOption = /^no$/i
         if(noOption.test(body)){
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                text: {
+                  body: `Agradecemos su confianza, lo mantendremos al tanto.`
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("NO OPTION TEXT ERROR: ", JSON.stringify(error))
+            return
+          }
+        } else {
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                type: "template",
+                template: {
+                  "name": "services",
+                  "language": {
+                      "code": "es"
+                  }
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("DEFAULT TEXT ERROR: ", JSON.stringify(error))
+            return
+          }
+        }
+    }
+
+    async buttons(message){
+        const body = message?.button?.payload
+        const verifyTableRegex = /^verificar mesa$/i
+        const deleteContact = /^eliminar de contactos$/i
+        const yesOption = /^sí$/i
+        const noOption = /^no$/i
+        if(verifyTableRegex.test(body)) {
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                type: "template",
+                template: {
+                  name: "personal_id",
+                  language: {
+                      code: "es"
+                  },
+                  components: [
+                    {
+                        type: "button",
+                        sub_type: "flow",
+                        index: 0,
+                        parameters: [
+                            {
+                                type: "text",
+                                text: "Introduzca su cédula"
+                            }
+                        ]
+                    }
+                  ]
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("VERIFY TABLE BUTTON ERROR: ", JSON.stringify(error))
+            return
+          }
+        }
+        if(deleteContact.test(body)){
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                type: "template",
+                template: {
+                  "name": "delete_contact",
+                  "language": {
+                      "code": "es"
+                  }
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("DELETE CONTACT BUTTON ERROR: ", JSON.stringify(error))
+            return
+          }
+        }
+        if(yesOption.test(body)){
+          const dto = new DTOs()
+          const contacts = await dto.readContacts()
+          if(contacts?.length === 0){
+            res.sendStatus(200)
+          }
+        
+          const contactIndex = contacts?.findIndex((x)=> `507${x?.Celular}` === message?.from)
+          contacts[contactIndex].SeCabreoDeNosotros = 1
+
+          const csv = convertToCSV(contacts)
+          const storage = new CloudStorage()
+          storage.writeFile('difusion.csv', csv)
+
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                text: {
+                  body: `Ha sido borrado de la lista de difusión, Le agradecemos su tiempo.`
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("YES OPTION BUTTON ERROR: ", error)
+            return
+          }
+        }
+        if(noOption.test(body)){
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                text: {
+                  body: `Agradecemos su confianza, lo mantendremos al tanto.`
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("NO OPTION BUTTON ERROR: ", error)
+            return
+          }
+        }
+    }
+
+    async replies(message){
+      const body = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_TextInput_0 ?? ''
+      const dto = new DTOs()
+      const data = await dto.readVoteCenter(body ?? '')
+      const { name, voteCenter, voteTable, zone } = data
+      if(data.status){
+        try {
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
@@ -25,15 +222,21 @@ export class Responses {
             data: {
               messaging_product: "whatsapp",
               to: message.from,
-              text: {
-                body: `Agradecemos su confianza, lo mantendremos al tanto.`
+              type: "image",
+              image: {
+                caption: `*${name}*, le corresponde votar en: *${voteCenter}*, en la mesa: *${voteTable}*.`,
+                id: zoneToImage(zone)
               },
               context: {
                 message_id: message.id,
               },
             },
           })
-        } else {
+        } catch (error) {
+          console.error("TEXT REPLY ERROR: ", JSON.stringify(error))
+          return
+        }
+        try {
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
@@ -50,21 +253,37 @@ export class Responses {
                     "code": "es"
                 }
               },
+            },
+          })
+        } catch (error) {
+          console.error("SERVICE REPLY ERROR: ", JSON.stringify(error))
+          return
+        }
+      } else {
+        try {
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              text: {
+                body: "No hemos podido encontrar su centro de votación. Por favor, consulte en la página oficial del Tribunal Electoral: https://verificate.te.gob.pa/"
+              },
               context: {
                 message_id: message.id,
               },
             },
           })
+        } catch (error) {
+          console.error("VOTE CENTER NOT FOUND ERROR: ", JSON.stringify(error))
+          return
         }
-    }
 
-    async buttons(message){
-        const body = message?.button?.payload
-        const verifyTableRegex = /^verificar mesa$/i
-        const deleteContact = /^eliminar de contactos$/i
-        const yesOption = /^sí$/i
-        const noOption = /^no$/i
-        if(verifyTableRegex.test(body)) {
+        try {
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
@@ -76,192 +295,23 @@ export class Responses {
               to: message.from,
               type: "template",
               template: {
-                name: "personal_id",
-                language: {
-                    code: "es"
-                },
-                components: [
-                  {
-                      type: "button",
-                      sub_type: "flow",
-                      index: 0,
-                      parameters: [
-                          {
-                              type: "text",
-                              text: "Introduzca su cédula"
-                          }
-                      ]
-                  }
-                ]
-              },
-              context: {
-                message_id: message.id,
-              },
-            },
-          })
-        }
-        if(deleteContact.test(body)){
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-            headers: {
-              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              type: "template",
-              template: {
-                "name": "delete_contact",
+                "name": "services",
                 "language": {
                     "code": "es"
                 }
               },
-              context: {
-                message_id: message.id,
-              },
             },
           })
+        } catch (error) {
+          console.error("VOTE CENTER NOT FOUND SERVICE ERROR: ", JSON.stringify(error))
+          return
         }
-        if(yesOption.test(body)){
-          const dto = new DTOs()
-          const contacts = await dto.readContacts()
-          if(contacts?.length === 0){
-            res.sendStatus(200)
-          }
-        
-          const contactIndex = contacts?.findIndex((x)=> `507${x?.Celular}` === message?.from)
-          contacts[contactIndex].SeCabreoDeNosotros = 1
-
-          const csv = convertToCSV(contacts)
-          const storage = new CloudStorage()
-          storage.writeFile('difusion_1.csv', csv)
-
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-            headers: {
-              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: {
-                body: `Ha sido borrado de la lista de difusión, Le agradecemos su tiempo.`
-              },
-              context: {
-                message_id: message.id,
-              },
-            },
-          })
-        }
-        if(noOption.test(body)){
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-            headers: {
-              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: {
-                body: `Agradecemos su confianza, lo mantendremos al tanto.`
-              },
-              context: {
-                message_id: message.id,
-              },
-            },
-          })
-        }
-    }
-
-    async replies(message){
-      const body = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_TextInput_0 ?? ''
-      const dto = new DTOs()
-      const data = await dto.readVoteCenter(body ?? '')
-
-      if(data.status){
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-          headers: {
-            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            to: message.from,
-            text: {
-              body: `*${data.name}*, le corresponde votar en: *${data.voteCenter}*, en la mesa: *${data.voteTable}*.`
-            },
-            context: {
-              message_id: message.id,
-            },
-          },
-        })
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-          headers: {
-            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            to: message.from,
-            type: "template",
-            template: {
-              "name": "services",
-              "language": {
-                  "code": "es"
-              }
-            },
-          },
-        })
-      } else {
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-          headers: {
-            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            to: message.from,
-            text: {
-              body: "No hemos podido encontrar su centro de votación. Por favor, consulte en la página oficial del Tribunal Electoral: https://verificate.te.gob.pa/"
-            },
-            context: {
-              message_id: message.id,
-            },
-          },
-        })
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-          headers: {
-            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            to: message.from,
-            type: "template",
-            template: {
-              "name": "services",
-              "language": {
-                  "code": "es"
-              }
-            },
-          },
-        })
       }
 
     }
 
     async difusion(to, MEDIA_ID){
       console.log(`---------------ENVIANDO MENSAJE A: ${to} ----------------`)
-      console.log('this.BUSINESS_PHONE_ID: ', this.BUSINESS_PHONE_ID !== undefined)
-      console.log('this.GRAPH_API_TOKEN: ', this.GRAPH_API_TOKEN !== undefined)
-      console.log('MEDIA_ID: ', MEDIA_ID !== undefined)
       try {
         await axios({
           method: "POST",
@@ -274,7 +324,7 @@ export class Responses {
             to,
             type: "template",
             template: {
-              name: "llamado_a_accion_5_de_mayo",
+              name: "difusion_template",
               language: {
                   code: "es"
               },

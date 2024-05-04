@@ -92,7 +92,7 @@ app.post("/recurrent", async (req, res) => {
         to,
         type: "template",
         template: {
-          name: "llamado_a_accion_5_de_mayo",
+          name: "difusion_template",
           language: {
               code: "es"
           },
@@ -141,7 +141,6 @@ app.post("/difusion", async (req, res) => {
   
   for(let contact of contacts){
     const exists = filteredContacts?.find((x)=> x?.Celular)
-    console.log("---------- UPDATED CONTACT --------------", JSON.stringify(exists))
     if(exists){
       contact = {...exists}
     }
@@ -149,7 +148,7 @@ app.post("/difusion", async (req, res) => {
 
   const csv = convertToCSV(contacts)
   const storage = new CloudStorage()
-  storage.writeFile('difusion_1.csv', csv)
+  storage.writeFile('difusion.csv', csv)
   
   res.sendStatus(200)
 })
@@ -157,13 +156,10 @@ app.post("/difusion", async (req, res) => {
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 app.get("/webhook", (req, res) => {
-  console.log("Testing webhook----------->", req.query)
   const mode = req.query["hub.mode"]
   const token = req.query["hub.verify_token"]
   const challenge = req.query["hub.challenge"]
 
-  // check the mode and token sent are correct
-  console.log(WEBHOOK_VERIFY_TOKEN)
   if (mode === "subscribe" && token === WEBHOOK_VERIFY_TOKEN) {
     // respond with 200 OK and challenge token from the request
     res.status(200).send(challenge)
@@ -179,6 +175,7 @@ app.get("/", (req, res) => {
 Checkout README.md to start.</pre>`)
 })
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is listening on port: ${PORT}`)
+  server.setTimeout(1200000) // 20 minutes
 })
