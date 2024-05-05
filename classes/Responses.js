@@ -74,6 +74,7 @@ export class Responses {
         const deleteContact = /^eliminar de contactos$/i
         const yesOption = /^sí$/i
         const noOption = /^no$/i
+        const getTransport = /^Solicitar transporte$/i
         if(verifyTableRegex.test(body)) {
           try {
             await axios({
@@ -204,14 +205,82 @@ export class Responses {
             return
           }
         }
+        if(getTransport.test(body)){
+          try {
+            await axios({
+              method: "POST",
+              url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+              headers: {
+                Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+              },
+              data: {
+                messaging_product: "whatsapp",
+                to: message.from,
+                type: "template",
+                template: {
+                  name: "transport_person_id",
+                  language: {
+                      code: "es"
+                  },
+                  components: [
+                    {
+                        type: "button",
+                        sub_type: "flow",
+                        index: 0,
+                        parameters: [
+                            {
+                                type: "text",
+                                text: "Complete el formulario"
+                            }
+                        ]
+                    }
+                  ]
+                },
+                context: {
+                  message_id: message.id,
+                },
+              },
+            })
+          } catch (error) {
+            console.error("VERIFY TABLE BUTTON ERROR: ", JSON.stringify(error))
+            return
+          }
+        }
     }
 
     async replies(message){
+      console.log(`------------------REPLY: ${JSON.stringify(message.interactive.nfm_reply.response_json)} -------------`)
       const body = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_TextInput_0 ?? ''
+      const discapacity = JSON.parse(`${message.interactive.nfm_reply.response_json}`)?.screen_0_RadioButtonsGroup_1 ?? ''
+
       const dto = new DTOs()
       const data = await dto.readVoteCenter(body ?? '')
       const { name, voteCenter, voteTable, zone } = data
-      if(data.status){
+
+      if(discapacity === "0_Sí" && data.status){
+        try {
+          await axios({
+            method: "POST",
+            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+            headers: {
+              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+            },
+            data: {
+              messaging_product: "whatsapp",
+              to: message.from,
+              text: {
+                body: `A usted, *${name}*, le corresponde votar en el centro de votación ubicado en *${voteCenter}*, en la mesa *${voteTable}*. Si requiere un servicio de transporte personalizado debido a una discapacidad o si alguna persona de su familia vota en un corregimiento diferente, le invitamos a completar el siguiente formulario para solicitar asistencia: https://forms.gle/iLdaL6AYd98tngTLA.`,
+              },
+              context: {
+                message_id: message.id,
+              },
+            },
+          })
+        } catch (error) {
+          console.error("VOTE CENTER NOT FOUND ERROR: ", JSON.stringify(error))
+          return
+        }
+      } else if(discapacity !== "0_Sí" && data.status){
         try {
           await axios({
             method: "POST",
@@ -236,30 +305,7 @@ export class Responses {
           console.error("TEXT REPLY ERROR: ", JSON.stringify(error))
           return
         }
-        try {
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-            headers: {
-              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              type: "template",
-              template: {
-                "name": "services",
-                "language": {
-                    "code": "es"
-                }
-              },
-            },
-          })
-        } catch (error) {
-          console.error("SERVICE REPLY ERROR: ", JSON.stringify(error))
-          return
-        }
-      } else {
+      }else {
         try {
           await axios({
             method: "POST",
@@ -282,30 +328,30 @@ export class Responses {
           console.error("VOTE CENTER NOT FOUND ERROR: ", JSON.stringify(error))
           return
         }
+      }
 
-        try {
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
-            headers: {
-              Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+      try {
+        await axios({
+          method: "POST",
+          url: `https://graph.facebook.com/v18.0/${this.BUSINESS_PHONE_ID}/messages`,
+          headers: {
+            Authorization: `Bearer ${this.GRAPH_API_TOKEN}`,
+          },
+          data: {
+            messaging_product: "whatsapp",
+            to: message.from,
+            type: "template",
+            template: {
+              "name": "services",
+              "language": {
+                  "code": "es"
+              }
             },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              type: "template",
-              template: {
-                "name": "services",
-                "language": {
-                    "code": "es"
-                }
-              },
-            },
-          })
-        } catch (error) {
-          console.error("VOTE CENTER NOT FOUND SERVICE ERROR: ", JSON.stringify(error))
-          return
-        }
+          },
+        })
+      } catch (error) {
+        console.error("SERVICE REPLY ERROR: ", JSON.stringify(error))
+        return
       }
 
     }

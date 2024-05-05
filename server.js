@@ -15,14 +15,12 @@ const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, BUSINESS_PHONE_ID, MEDIA_ID } = p
 const PORT = process.env.PORT || 8080
 
 app.post("/webhook", async (req, res) => {  
-
-  console.log(`-----------------STATUS: ${JSON.stringify(req.body.entry?.[0]?.changes?.[0]?.statuses ?? 'NOTHING')}---------------`)
   // TODO: Adding management for status updates
   /* if(req.body.entry?.[0]?.changes[0]?.statuses?.status !== 'sent'){
     res.sendStatus(200)
     return
   } */
-  console.log("----------------------Incoming webhook message ---------------", JSON.stringify(req.body, null, 2))
+  console.log("----------------------Incoming webhook message ---------------", JSON.stringify(req.body))
 
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0]
   const responses = new Responses(BUSINESS_PHONE_ID, GRAPH_API_TOKEN)
@@ -48,10 +46,6 @@ app.post("/webhook", async (req, res) => {
   } catch (error) {
     console.error(error)
   } finally {
-      console.log("----------------------- Object -------------------", JSON.stringify({
-        from: message?.from,
-        id: message?.id
-      }))
   
       if(message?.type){
         // mark incoming message as read
