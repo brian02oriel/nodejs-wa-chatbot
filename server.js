@@ -7,6 +7,7 @@ import { DTOs } from './classes/DTOs.js'
 import { CloudStorage } from './classes/CloudStorage.js'
 import { convertToCSV } from './resources/utils.js'
 import { Operations } from './resources/Mongoose/Operations.js'
+import fs from 'fs'
 
 const app = express()
 app.use(express.json())
@@ -145,6 +146,24 @@ app.post("/difusion", async (req, res) => {
   storage.writeFile('difusion.csv', csv)
   
   res.sendStatus(200)
+})
+
+app.get("/conversations", async (req, res)=> {
+  console.log("--------CONVERSATION--------", req.query["type"])
+  const type = req.query["type"]
+  const from = moment(req.query["from"], "DD/MM/YYYY").toDate()
+  const to = moment(req.query["to"], "DD/MM/YYYY").toDate()
+  const operation = new Operations()
+  const conversations = await operation.getConversations(type, from, to)
+  const csv = convertToCSV(conversations)
+  fs.WriteStream(`Report ${moment().format("DD/MM/YYYY HH:mm")}.csv`, csv, 'utf8', (error)=> {
+    if(error){
+      console.error("WRITE FILE ERROR: ", JSON.stringify(error))
+    } else {
+      console.log("------FILE SAVED SUCCESSFULLY----")
+    }
+  })
+  res.status(200).json({data: conversations})
 })
 
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
